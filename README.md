@@ -1,5 +1,3 @@
-# MLB-Breakout-Player-Predictor
-
 # MLB Breakout Predictor
 
 A full-stack web application that predicts which MLB and minor league players have the potential to break out as star performers, using advanced baseball statistics and machine learning.
