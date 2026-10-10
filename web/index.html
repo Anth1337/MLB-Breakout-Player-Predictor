@@ -1,0 +1,536 @@
+<title>MiLB Breakout Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root {
+    --paper:      #eaebe6;
+    --paper-sunk: #e0e2db;
+    --ink:        #18212b;
+    --ink-soft:   #55606c;
+    --ink-faint:  #8b949c;
+    --rule:       #c9cbc3;
+    --rule-soft:  #d6d8d1;
+    --grass:      #2e6b4f;
+    --grass-deep: #1d4a36;
+    --clay:       #a8503a;
+
+    --lvl-1: #cfd9cf;
+    --lvl-2: #a3bfa9;
+    --lvl-3: #5f9271;
+    --lvl-4: #2e6b4f;
+    --lvl-ink-lo: #22312a;
+    --lvl-ink-hi: #f1f4ef;
+
+    --step--1: 0.75rem;
+    --step-0:  0.9375rem;
+    --step-1:  1.125rem;
+    --step-2:  1.5rem;
+    --step-3:  2.25rem;
+    --step-4:  clamp(2.75rem, 9vw, 4.5rem);
+
+    --sans: "Public Sans", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --cond: "Barlow Condensed", "Public Sans", ui-sans-serif, system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #141a1f;
+      --paper-sunk: #1b2229;
+      --ink:        #e8eae6;
+      --ink-soft:   #a2aeb6;
+      --ink-faint:  #6d7a83;
+      --rule:       #2b343c;
+      --rule-soft:  #232b32;
+      --grass:      #6fb98d;
+      --grass-deep: #8fcfa8;
+      --clay:       #d9846a;
+
+      --lvl-1: #2a343a;
+      --lvl-2: #35533f;
+      --lvl-3: #4a8761;
+      --lvl-4: #6fb98d;
+      --lvl-ink-lo: #c6d2cb;
+      --lvl-ink-hi: #10211a;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #141a1f;
+    --paper-sunk: #1b2229;
+    --ink:        #e8eae6;
+    --ink-soft:   #a2aeb6;
+    --ink-faint:  #6d7a83;
+    --rule:       #2b343c;
+    --rule-soft:  #232b32;
+    --grass:      #6fb98d;
+    --grass-deep: #8fcfa8;
+    --clay:       #d9846a;
+
+    --lvl-1: #2a343a;
+    --lvl-2: #35533f;
+    --lvl-3: #4a8761;
+    --lvl-4: #6fb98d;
+    --lvl-ink-lo: #c6d2cb;
+    --lvl-ink-hi: #10211a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-0);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 60rem;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 2.5rem);
+    padding-block: clamp(2.5rem, 7vw, 4.5rem) 3rem;
+  }
+
+  /* ---------- masthead ---------- */
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--grass);
+    margin: 0 0 0.75rem;
+  }
+
+  h1 {
+    font-family: var(--cond);
+    font-size: var(--step-4);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 0.95;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .deck {
+    max-width: 44ch;
+    margin: 1rem 0 0;
+    color: var(--ink-soft);
+    font-size: var(--step-1);
+    line-height: 1.5;
+  }
+
+  .scoreline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 2.25rem;
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 2px solid var(--ink);
+  }
+
+  .scoreline div {
+    padding-block: 0.4rem;
+  }
+
+  .scoreline dt {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .scoreline dd {
+    margin: 0.1rem 0 0;
+    font-family: var(--cond);
+    font-size: var(--step-2);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- board ---------- */
+
+  .board-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 3.25rem 0 0;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .board-head h2 {
+    font-family: var(--cond);
+    font-size: var(--step-2);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    margin: 0;
+  }
+
+  .board-head p {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  ol.board {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .player {
+    display: grid;
+    grid-template-columns: 3.25rem 5.5rem 1fr auto;
+    align-items: start;
+    column-gap: clamp(0.75rem, 2.5vw, 1.5rem);
+    row-gap: 0.85rem;
+    padding-block: 1.6rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .player:first-child { border-top: none; }
+
+  .rank {
+    grid-column: 1;
+    font-family: var(--cond);
+    font-size: var(--step-3);
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-faint);
+    padding-top: 0.15rem;
+  }
+
+  .player:nth-child(-n+3) .rank { color: var(--grass); }
+
+  .shot {
+    grid-column: 2;
+    width: 5.5rem;
+    aspect-ratio: 1 / 1.1;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--paper-sunk);
+    border: 1px solid var(--rule);
+  }
+
+  .shot img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 18%;
+  }
+
+  .monogram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-family: var(--cond);
+    font-size: var(--step-2);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ink-faint);
+  }
+
+  .bio { grid-column: 3; min-width: 0; }
+
+  .bio h3 {
+    font-family: var(--cond);
+    font-size: var(--step-2);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: 0.005em;
+    margin: 0;
+  }
+
+  .meta {
+    margin: 0.3rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.55rem;
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+
+  .meta .sep { color: var(--rule); }
+
+  .lvl {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 0.12rem 0.4rem;
+    border-radius: 2px;
+  }
+
+  .lvl-1 { background: var(--lvl-1); color: var(--lvl-ink-lo); }
+  .lvl-2 { background: var(--lvl-2); color: var(--lvl-ink-lo); }
+  .lvl-3 { background: var(--lvl-3); color: var(--lvl-ink-hi); }
+  .lvl-4 { background: var(--lvl-4); color: var(--lvl-ink-hi); }
+
+  .stats {
+    margin: 0.9rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+  }
+
+  .stats div { padding-block: 0.15rem; }
+
+  .stats dt {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .stats dd {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: var(--step-0);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .factors {
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .factors li {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    font-size: var(--step--1);
+    line-height: 1.35;
+    padding: 0.2rem 0.5rem 0.25rem;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    color: var(--ink-soft);
+  }
+
+  .factors .arrow {
+    font-family: var(--mono);
+    font-weight: 600;
+  }
+
+  .factors .up   .arrow { color: var(--grass); }
+  .factors .down .arrow { color: var(--clay); }
+
+  .factors .val {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-faint);
+  }
+
+  .score {
+    grid-column: 4;
+    text-align: right;
+    padding-top: 0.15rem;
+  }
+
+  .score .num {
+    display: block;
+    font-family: var(--cond);
+    font-size: var(--step-3);
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  .score .cap {
+    display: block;
+    margin-top: 0.3rem;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- notes ---------- */
+
+  .notes {
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--ink);
+  }
+
+  .notes h2 {
+    font-family: var(--cond);
+    font-size: var(--step-2);
+    font-weight: 600;
+    margin: 0 0 1rem;
+  }
+
+  .notes h3 {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--grass);
+    margin: 1.75rem 0 0.4rem;
+  }
+
+  .notes p {
+    margin: 0 0 0.75rem;
+    max-width: 65ch;
+    color: var(--ink-soft);
+  }
+
+  .notes strong { color: var(--ink); font-weight: 600; }
+
+  .notes code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: var(--paper-sunk);
+    padding: 0.08em 0.3em;
+    border-radius: 2px;
+  }
+
+  .caveat {
+    border-left: 3px solid var(--clay);
+    padding: 0.1rem 0 0.1rem 0.9rem;
+  }
+
+  .colophon {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule-soft);
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+    line-height: 1.7;
+  }
+
+  /* ---------- narrow ---------- */
+
+  @media (max-width: 40rem) {
+    .player {
+      grid-template-columns: 2.5rem 4.25rem 1fr;
+      row-gap: 0.65rem;
+    }
+    .rank { font-size: var(--step-2); }
+    .shot { width: 4.25rem; }
+    .score {
+      grid-column: 2 / -1;
+      grid-row: 2;
+      text-align: left;
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      padding-top: 0;
+    }
+    .score .num { font-size: var(--step-2); }
+    .score .cap { margin-top: 0; }
+    .stats { gap: 0 1.1rem; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .player { transition: background-color 120ms ease; }
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--grass);
+    outline-offset: 2px;
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Minor league hitters &middot; 2025 season</p>
+    <h1>Breakout Board</h1>
+    <p class="deck">
+      The 25 highest-scoring hitters out of 1,228 prospect-aged bats, ranked by a
+      model trained on eleven seasons of minor-league lines and what the hitters
+      behind them went on to do in the majors.
+    </p>
+    <dl class="scoreline">
+      <div><dt>Hitters scored</dt><dd>1,228</dd></div>
+      <div><dt>Test ROC-AUC</dt><dd>.904</dd></div>
+      <div><dt>Test PR-AUC</dt><dd>.487</dd></div>
+      <div><dt>Hit rate, top 30</dt><dd>20 / 30</dd></div>
+      <div><dt>Cohort base rate</dt><dd>5.5%</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <div class="board-head">
+      <h2>The board</h2>
+      <p>Ranked by model score</p>
+    </div>
+    <ol class="board" id="board"></ol>
+  </section>
+
+  <section class="notes">
+    <h2>How the board was built</h2>
+
+    <h3>The label</h3>
+    <p>
+      A minor-league season counts as a <strong>breakout</strong> if that hitter went on to
+      take <strong>500 or more major-league plate appearances with an OPS of .740 or better</strong>
+      within the next six seasons &mdash; roughly the bar for an above-average everyday regular.
+      Across 13,469 prospect-aged seasons from 2008&ndash;2018, 5.5% cleared it.
+    </p>
+
+    <h3>The model</h3>
+    <p>
+      Logistic regression on fifteen features, chosen over a random forest and gradient
+      boosting on validation PR-AUC. Splits are by season, never random: train through 2016,
+      validate on 2017, test on a locked-away 2018. The strongest signals are
+      <strong>age</strong>, <strong>level reached</strong>, <strong>OPS</strong>, and
+      <strong>age relative to the level's average</strong> &mdash; a 19-year-old holding his own
+      in Double-A is the textbook profile.
+    </p>
+
+    <h3>Reading the score</h3>
+    <p class="caveat">
+      The score ranks, it does not forecast. All three models use
+      <code>class_weight="balanced"</code>, which inflates predicted probabilities against a
+      5.5% base rate &mdash; the calibration curve has the .90-and-up bucket converting at
+      closer to .60. Treat a .99 as "top of the board," not as a 99% chance.
+    </p>
+    <p>
+      The chips under each hitter are that player's three largest SHAP contributions: an
+      up arrow means the feature pushed his score up, a down arrow means it pulled the score
+      down, with the feature's actual value alongside.
+    </p>
+
+    <h3>What it can't see</h3>
+    <p>
+      No Statcast. The MLB Stats API exposes traditional minor-league lines only, so exit
+      velocity, barrel rate and expected wOBA are all missing &mdash; the quality-of-contact
+      data that would sharpen Triple-A reads most. Defensive value is absent too: position is
+      carried for display but never fed to the model.
+    </p>
+
+    <p class="colophon">
+      Data: MLB Stats API, sportIds 11/12/13/14 &middot; 45,094 raw minor-league rows &rarr; 32,761 player-seasons<br>
+      Cohort filter: 150+ PA, age 25 and under &middot; Headshots: MLB static CDN<br>
+      Generated by <code>breakout_predictor.ipynb</code>
+    </p>
+  </section>
+</div>
+
+<script type="module" src="app.js"></script>

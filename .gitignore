@@ -1,0 +1,10 @@
+# Cached MLB Stats API pulls and generated predictions — all reproducible
+# by re-running breakout_predictor.ipynb.
+data/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
